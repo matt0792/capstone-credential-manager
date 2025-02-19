@@ -1,0 +1,51 @@
+.register-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+  width: 100%;
+}
+
+.register-form-container {
+  background-color: rgba(245, 245, 245, 0.308);
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.156);
+  border-radius: 10px;
+  padding: 20px;
+  width: 70%;
+}
+
+.register-form,
+.credential-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cred-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.register-input {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+}
+
+.register-btn {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  background-color: rgb(255, 255, 255);
+}
+
+.ou-group {
+    display: flex; 
+    gap: 20px;
+}

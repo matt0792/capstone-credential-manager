@@ -1,0 +1,85 @@
+.background {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  z-index: -1;
+  background-color: rgb(224, 224, 224);
+}
+
+.circle-container {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+}
+
+.circle {
+  border-radius: 50%;
+  position: fixed;
+}
+
+.circle-1 {
+  background-color: #ff254d;
+  height: 600px;
+  width: 600px;
+  top: 10%;
+  left: 10%;
+  z-index: 1;
+}
+.circle-2 {
+  background-color: #ffffffc1;
+  height: 400px;
+  width: 400px;
+  top: 25%;
+  left: 5%;
+  z-index: 3;
+}
+.circle-3 {
+  background-color: #3f2aff;
+  height: 600px;
+  width: 600px;
+  bottom: 10%;
+  right: 10%;
+  z-index: 1;
+}
+.circle-4 {
+  background-color: #ffffffdc;
+  height: 400px;
+  width: 400px;
+  bottom: 25%;
+  right: 5%;
+  z-index: 2;
+}
+
+.bg-blur-overlay {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  z-index: 3;
+  backdrop-filter: blur(120px);
+}
+
+.animate-1 {
+  animation: animate-1 10s ease infinite alternate;
+}
+
+@keyframes animate-1 {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(50vw);
+  }
+}
+
+.animate-2 {
+  animation: animate-2 20s ease infinite alternate;
+}
+
+@keyframes animate-2 {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(-50vw);
+  }
+}
