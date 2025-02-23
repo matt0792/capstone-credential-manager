@@ -58,3 +58,6 @@ backend/data/
 *.db
 *.db-wal
 *.db-shm
+
+# Ignore all .env files in any folder
+*.env
