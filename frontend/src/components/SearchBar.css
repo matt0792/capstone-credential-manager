@@ -2,7 +2,7 @@
   position: fixed;
   width: 350px;
   border-radius: 10px;
-  top: 10px;
+  top: 16px;
   right: 10px;
   z-index: 50; 
   backdrop-filter: blur(7px);

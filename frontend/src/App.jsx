@@ -7,6 +7,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Background from "./components/Background";
 import SideBar from "./components/SideBar";
 import AuthWrapper from "./components/AuthWrapper";
+import AddCredModal from "./components/AddCredModal";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -17,6 +18,8 @@ const App = () => {
   const [sectionToDisplay, setSectionToDisplay] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [onHome, setOnHome] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedDivisionId, setSelectedDivisionId] = useState(null);
 
   useEffect(() => {
     setOnHome(false);
@@ -31,6 +34,12 @@ const App = () => {
           isAuthenticated={isAuthenticated}
           onHome={onHome}
         />
+        {showAddModal && (
+          <AddCredModal
+            selectedDivisionId={selectedDivisionId}
+            setShowAddModal={setShowAddModal}
+          />
+        )}
         <div className="page-content">
           <div className="spacer-left"></div>
           <Routes>
@@ -48,6 +57,8 @@ const App = () => {
                   <HomePage
                     sectionToDisplay={sectionToDisplay}
                     setOnHome={setOnHome}
+                    setShowAddModal={setShowAddModal}
+                    setSelectedDivisionId={setSelectedDivisionId}
                   />
                 </AuthWrapper>
               }

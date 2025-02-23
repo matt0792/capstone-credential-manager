@@ -29,25 +29,40 @@ const createDivisions = async () => {
     }
 
     for (const ou of organizationalUnits) {
+      let ouUpdated = false;
+
       for (const divisionName of divisionsList) {
-        const existingDivision = await Division.findOne({
+        let division = await Division.findOne({
           name: divisionName,
           organizationalUnit: ou._id,
         });
-        if (!existingDivision) {
-          const newDivision = new Division({
+
+        if (!division) {
+          division = new Division({
             name: divisionName,
             organizationalUnit: ou._id,
           });
-          await newDivision.save();
-          console.log(`Division ${divisionName} created for ${ou.name}`);
+          await division.save();
+          console.log(`Created division: ${divisionName} for ${ou.name}`);
         }
+
+        // Add division reference to the OU if not already present
+        if (!ou.divisions.includes(division._id)) {
+          ou.divisions.push(division._id);
+          ouUpdated = true;
+        }
+      }
+
+      // Save the OU **only if it was updated**
+      if (ouUpdated) {
+        await ou.save();
+        console.log(`Updated Organizational Unit: ${ou.name}`);
       }
     }
   } catch (err) {
     console.error("Error creating divisions:", err);
   } finally {
-    mongoose.connection.close();
+    await mongoose.connection.close();
     console.log("Database connection closed");
   }
 };

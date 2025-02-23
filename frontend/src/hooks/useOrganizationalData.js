@@ -10,7 +10,7 @@ const useOrganizationalData = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:3000/api/employee/division",
+          "http://localhost:3000/api/division/credentials",
           {
             method: "GET",
             headers: {
@@ -25,7 +25,7 @@ const useOrganizationalData = () => {
         }
 
         const result = await response.json();
-        setData(result.data);
+        setData(result.credentials);
       } catch (err) {
         setError(err.message);
       } finally {

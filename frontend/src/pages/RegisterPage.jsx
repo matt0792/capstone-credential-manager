@@ -8,7 +8,6 @@ const RegisterPage = () => {
     password: "",
     role: "normal",
     organizationalUnits: [{ ouId: "", divisionId: "" }],
-    credentials: [{ siteName: "", username: "", password: "" }],
   });
 
   const [ous, setOUs] = useState([]);
@@ -58,28 +57,21 @@ const RegisterPage = () => {
     setFormData({ ...formData, organizationalUnits: updatedOUs });
   };
 
-  const handleCredentialChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedCredentials = [...formData.credentials];
-    updatedCredentials[index][name] = value;
-    setFormData({ ...formData, credentials: updatedCredentials });
-  };
-
-  const addCredential = () => {
+  const addOU = () => {
     setFormData({
       ...formData,
-      credentials: [
-        ...formData.credentials,
-        { siteName: "", username: "", password: "" },
+      organizationalUnits: [
+        ...formData.organizationalUnits,
+        { ouId: "", divisionId: "" },
       ],
     });
   };
 
-  const removeCredential = (index) => {
-    const updatedCredentials = formData.credentials.filter(
+  const removeOU = (index) => {
+    const updatedOUs = formData.organizationalUnits.filter(
       (_, i) => i !== index
     );
-    setFormData({ ...formData, credentials: updatedCredentials });
+    setFormData({ ...formData, organizationalUnits: updatedOUs });
   };
 
   const handleSubmit = async (e) => {
@@ -113,7 +105,7 @@ const RegisterPage = () => {
   return (
     <div className="register-page">
       <div className="register-form-container">
-        <h2>Register Employee</h2>
+        <div className="register-header">Register Employee</div>
         {error && <p className="error">{error}</p>}
         {success && <p className="success">{success}</p>}
         <form className="register-form" onSubmit={handleSubmit}>
@@ -156,96 +148,64 @@ const RegisterPage = () => {
             <option value="admin">Admin</option>
           </select>
 
-          <h3>Organizational Units</h3>
-          {formData.organizationalUnits.map((unit, index) => (
-            <div key={index} className="ou-group">
-              <select
-                className="register-input"
-                name="ouId"
-                value={unit.ouId}
-                onChange={(e) => handleOUChange(index, e)}
-                required
-              >
-                <option value="">Select OU</option>
-                {ous.map((ou) => (
-                  <option key={ou.ouId} value={ou.ouId}>
-                    {ou.ouName}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                className="register-input"
-                name="divisionId"
-                value={unit.divisionId}
-                onChange={(e) => handleOUChange(index, e)}
-                required
-              >
-                <option value="">Select Division</option>
-                {ous
-                  .find((ou) => ou.ouId === unit.ouId)
-                  ?.divisions.map((division) => (
-                    <option
-                      key={division.divisionId}
-                      value={division.divisionId}
-                    >
-                      {division.divisionName}
+          <div className="register-header ou-reg-header">
+            Organizational Units
+          </div>
+          <div className="add-ou-container">
+            {formData.organizationalUnits.map((unit, index) => (
+              <div key={index} className="ou-group">
+                <select
+                  className="register-input"
+                  name="ouId"
+                  value={unit.ouId}
+                  onChange={(e) => handleOUChange(index, e)}
+                  required
+                >
+                  <option value="">Select OU</option>
+                  {ous.map((ou) => (
+                    <option key={ou.ouId} value={ou.ouId}>
+                      {ou.ouName}
                     </option>
-                  )) || []}
-              </select>
-            </div>
-          ))}
+                  ))}
+                </select>
 
-          <h3>Credentials</h3>
-          <div className="cred-container">
-            {formData.credentials.map((credential, index) => (
-              <div key={index} className="credential-group">
-                <input
-                  type="text"
+                <select
                   className="register-input"
-                  name="siteName"
-                  placeholder="Site Name"
-                  value={credential.siteName}
-                  onChange={(e) => handleCredentialChange(index, e)}
+                  name="divisionId"
+                  value={unit.divisionId}
+                  onChange={(e) => handleOUChange(index, e)}
                   required
-                />
-                <input
-                  type="text"
-                  className="register-input"
-                  name="username"
-                  placeholder="Credential Username"
-                  value={credential.username}
-                  onChange={(e) => handleCredentialChange(index, e)}
-                  required
-                />
-                <input
-                  type="password"
-                  className="register-input"
-                  name="password"
-                  placeholder="Credential Password"
-                  value={credential.password}
-                  onChange={(e) => handleCredentialChange(index, e)}
-                  required
-                />
-                {formData.credentials.length > 1 && (
+                >
+                  <option value="">Select Division</option>
+                  {ous
+                    .find((ou) => ou.ouId === unit.ouId)
+                    ?.divisions.map((division) => (
+                      <option
+                        key={division.divisionId}
+                        value={division.divisionId}
+                      >
+                        {division.divisionName}
+                      </option>
+                    )) || []}
+                </select>
+
+                {/* Remove button for OU */}
+                {formData.organizationalUnits.length > 1 && (
                   <button
                     type="button"
-                    className="remove-btn register-btn"
-                    onClick={() => removeCredential(index)}
+                    className="gen-button"
+                    onClick={() => removeOU(index)}
                   >
-                    Remove
+                    Remove OU
                   </button>
                 )}
               </div>
             ))}
           </div>
 
-          <button
-            type="button"
-            className="add-btn register-btn"
-            onClick={addCredential}
-          >
-            Add Credential
+          {/* Add new ou and division pair */}
+          <button type="button" className="register-btn" onClick={addOU}>
+            Add Organizational Unit
           </button>
 
           <button type="submit" className="register-btn">

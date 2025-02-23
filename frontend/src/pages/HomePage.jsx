@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 import useOrganizationalData from "../hooks/useOrganizationalData";
-import EditButton from "../components/EditButton";
 import SearchBar from "../components/SearchBar";
 
-const HomePage = ({ sectionToDisplay, setOnHome }) => {
+const HomePage = ({
+  sectionToDisplay,
+  setOnHome,
+  setShowAddModal,
+  setSelectedDivisionId,
+}) => {
   const { data, loading, error } = useOrganizationalData();
   const sectionRefs = useRef({});
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const toggleAddModal = (divisionId) => {
+    setSelectedDivisionId(divisionId);
+    setShowAddModal((prev) => !prev);
+  };
 
   // Initialize refs for scrolling
   if (data) {
@@ -46,63 +57,76 @@ const HomePage = ({ sectionToDisplay, setOnHome }) => {
     );
   if (error) return <p>Error: {error}</p>;
 
+  // filter by site name
+  const filteredData = data
+    .map((division) => ({
+      ...division,
+      credentials: division.credentials.filter((cred) =>
+        cred.siteName.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    }))
+    .filter(
+      (division) => division.credentials.length > 0 || searchQuery === ""
+    );
+
   return (
     <div className="home-page">
       <SearchBar onSearch={setSearchQuery} />
 
       <div className="home-data-container">
-        {Object.entries(data).map(([OU, divisions]) => (
-          <div key={OU} className="organizational-unit">
-            <h3 className="OU-title">{OU}</h3>
-            {Object.entries(divisions).map(([division, employees]) => {
-              // Filter employees based on search query
-              const filteredEmployees = employees.filter((employee) =>
-                employee.name.toLowerCase().includes(searchQuery.toLowerCase())
-              );
-
-              return (
-                <div
-                  key={division}
-                  ref={(el) => (sectionRefs.current[OU][division] = el)}
-                  className="division"
-                >
-                  <div className="home-division-header">
-                    <h4 className="division-title">
-                      {OU} <i className="bi bi-caret-right-fill"></i> {division}
-                    </h4>
+        {filteredData.length === 0 ? (
+          <p className="no-results">No matching credentials found.</p>
+        ) : (
+          filteredData.map((division, index) => (
+            <div key={index} className="division-container">
+              <div className="division-header">
+                {division.organizationalUnit}{" "}
+                <i className="bi bi-caret-right-fill"></i>{" "}
+                {division.divisionName}
+              </div>
+              <div>
+                {division.credentials.length === 0 ? (
+                  <div className="division-credential-container">
+                    No credentials available
                   </div>
-
-                  {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee, index) => (
-                      <div key={index} className="employee">
-                        <div className="employee-name bolder">
-                          {employee.name}
+                ) : (
+                  division.credentials.map((cred, credIndex) => (
+                    <div
+                      key={credIndex}
+                      className="division-credential-container"
+                    >
+                      <div className="cred-item">
+                        <div className="cred">
+                          <strong className="cred-label">Service:</strong>{" "}
+                          <div className="monospace">{cred.siteName}</div>
                         </div>
-                        <div className="employee-username">
-                          Username: {employee.username}
+                        <div className="cred">
+                          <strong className="cred-label">Username:</strong>{" "}
+                          <div className="monospace">{cred.username}</div>
                         </div>
-                        <div className="employee-credentials">
-                          {employee.credentials.map((cred, idx) => (
-                            <div key={idx} className="employee-credential">
-                              <div className="cred-title bolder">
-                                {cred.siteName}
-                              </div>
-                              <div>Username: {cred.username}</div>
-                              <div>Password: {cred.password}</div>
-                            </div>
-                          ))}
+                        <div className="cred">
+                          <strong className="cred-label">
+                            Password (Hover to reveal):
+                          </strong>{" "}
+                          <div
+                            className="password-cred"
+                            data-password={cred.password}
+                          ></div>
                         </div>
-                        <EditButton className="edit-button-home" />
                       </div>
-                    ))
-                  ) : (
-                    <p>No matching employees found</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                    </div>
+                  ))
+                )}
+              </div>
+              <div
+                className="add-credential-button"
+                onClick={() => toggleAddModal(division.divisionId)}
+              >
+                Add a new credential
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

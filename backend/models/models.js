@@ -33,13 +33,6 @@ const EmployeeSchema = new mongoose.Schema(
         },
       },
     ],
-    credentials: [
-      {
-        siteName: { type: String, required: true },
-        username: { type: String, required: true },
-        password: { type: String, required: true }, // Must be hashed before storing
-      },
-    ],
   },
   { timestamps: true }
 );
@@ -62,6 +55,13 @@ const DivisionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "OrganizationalUnit",
   },
+  credentials: [
+    {
+      siteName: { type: String, required: true },
+      username: { type: String, required: true },
+      password: { type: String, required: true }, // Must be hashed before storing
+    },
+  ],
 });
 
 // make sure that the division name is unique within an organizational unit
