@@ -1,0 +1,63 @@
+# Ignore Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore build outputs
+dist/
+build/
+.vite/
+.vitepress/
+.next/
+.out/
+
+# Ignore environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Ignore logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+.log/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore frontend cache & dependencies
+frontend/node_modules/
+frontend/dist/
+
+# Ignore backend cache & dependencies
+backend/node_modules/
+
+# Ignore lock files (optional, depends on team preference)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore local database & temporary files
+backend/data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+
+# Ignore all .env files in any folder
+*.env
