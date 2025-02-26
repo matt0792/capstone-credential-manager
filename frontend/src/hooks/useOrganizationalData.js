@@ -1,3 +1,5 @@
+// get data for ou's and divisions 
+
 import { useEffect, useState } from "react";
 
 const useOrganizationalData = () => {
@@ -5,38 +7,38 @@ const useOrganizationalData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:3000/api/division/credentials",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        "http://localhost:3000/api/division/credentials",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        const result = await response.json();
-        setData(result.credentials);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
       }
-    };
 
+      const result = await response.json();
+      setData(result.credentials);
+    } catch (err) {
+      setError(err.message); // Store only the error message (string)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
-  return { data, loading, error };
+  return { data, loading, error, refresh: fetchData }; // Add refresh function
 };
 
 export default useOrganizationalData;

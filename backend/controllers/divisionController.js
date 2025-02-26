@@ -1,3 +1,5 @@
+// logic for division management
+
 import { OrganizationalUnit, Division, Employee } from "../models/models.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -11,7 +13,7 @@ export const createDivision = async (req, res) => {
       return res.status(400).json({ message: "Division already exists" });
     }
 
-    // check if referenced OU exists
+    // check if the ou exists in the db
     const ou = await OrganizationalUnit.findById(organizationalUnitId);
     if (!ou) {
       return res.status(400).json({ message: "Organizational Unit not found" });
@@ -23,7 +25,7 @@ export const createDivision = async (req, res) => {
     });
     await newDivision.save();
 
-    // Add division reference to the OU if not already present
+    // check if division ref is present, and if not, add it
     if (!ou.divisions.includes(newDivision._id)) {
       ou.divisions.push(newDivision._id);
       await ou.save();
@@ -35,7 +37,7 @@ export const createDivision = async (req, res) => {
   }
 };
 
-// Find division by id and add new credential
+// add credential to division by id
 export const addCredential = async (req, res) => {
   try {
     const { divisionId, siteName, username, password } = req.body;
@@ -59,10 +61,46 @@ export const addCredential = async (req, res) => {
   }
 };
 
-// get credentials for the user's division
+// update division credentials
+export const updateCredential = async (req, res) => {
+  try {
+    const { divisionId, credentialId, siteName, username, password } = req.body;
+
+    // validate fields
+    if (!divisionId || !credentialId || !siteName || !username || !password) {
+      return res.status(400).json({
+        message:
+          "All fields (divisionId, credentialId, siteName, username, password) are required",
+      });
+    }
+
+    const division = await Division.findById(divisionId);
+    if (!division) {
+      return res.status(400).json({ message: "Division not found" });
+    }
+
+    // use subdocument id method to find credential
+    const credential = division.credentials.id(credentialId);
+    if (!credential) {
+      return res.status(400).json({ message: "Credential not found" });
+    }
+
+    // update fields
+    credential.siteName = siteName;
+    credential.username = username;
+    credential.password = password;
+
+    await division.save();
+
+    return res.status(200).json(credential);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// get all credentials for the user's division
 export const getDivisionCredentials = async (req, res) => {
   try {
-    // get auth header
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
       return res
@@ -91,18 +129,54 @@ export const getDivisionCredentials = async (req, res) => {
         .json({ message: "No credentials available for this user." });
     }
 
-    // Extract credentials
+    // format credentials
     const credentials = divisions.map((division) => ({
       organizationalUnit: division.organizationalUnit.name,
       divisionName: division.name,
       divisionId: division._id,
       credentials: division.credentials.map((cred) => ({
-      siteName: cred.siteName,
-      username: cred.username,
-      password: cred.password,
+        siteName: cred.siteName,
+        username: cred.username,
+        password: cred.password,
+        credentialId: cred._id,
       })),
     }));
 
     res.status(200).json({ credentials });
   } catch (err) {}
+};
+
+// delete a credential
+export const deleteCredential = async (req, res) => {
+  try {
+    const { divisionId, credentialId } = req.query;
+
+    // validate fields
+    if (!divisionId || !credentialId) {
+      return res.status(400).json({
+        message: "Both divisionId and credentialId are required",
+      });
+    }
+
+    // find division
+    const division = await Division.findById(divisionId);
+    if (!division) {
+      return res.status(400).json({ message: "Division not found" });
+    }
+
+    // find credential (subdocument method)
+    const credential = division.credentials.id(credentialId);
+    if (!credential) {
+      return res.status(400).json({ message: "Credential not found" });
+    }
+
+    // remove cred from array
+    division.credentials.pull(credentialId);
+
+    await division.save();
+
+    return res.status(200).json({ message: "Credential deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };

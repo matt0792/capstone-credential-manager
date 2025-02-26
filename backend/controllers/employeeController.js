@@ -3,7 +3,7 @@ import { OrganizationalUnit, Division } from "../models/models.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-// Register a user
+// register a new user
 export const registerEmployee = async (req, res) => {
   try {
     const { name, username, password, role, organizationalUnits } = req.body;
@@ -13,11 +13,11 @@ export const registerEmployee = async (req, res) => {
       return res.status(400).json({ message: "Username is taken" });
     }
 
-    // Hash the password for the employee's login
+    // hash login password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Check if OUs and divisions exist
+    // validate if ou's and divisions exist
     const validatedOUs = [];
     for (const unit of organizationalUnits) {
       const ouExists = await OrganizationalUnit.findById(unit.ouId);
@@ -31,7 +31,7 @@ export const registerEmployee = async (req, res) => {
       validatedOUs.push(unit);
     }
 
-    // Create a new employee
+    // create the new employee
     const newEmployee = new Employee({
       name,
       username,
@@ -48,24 +48,24 @@ export const registerEmployee = async (req, res) => {
   }
 };
 
-// Login a user
+// login a user
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Check if the user exists
+    // verify that the user exists
     const user = await Employee.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if the password is correct
+    // check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Define payload
+    // define the payload for the JWT
     const payload = {
       user: {
         id: user._id,
@@ -74,7 +74,7 @@ export const loginUser = async (req, res) => {
       },
     };
 
-    // Generate a JWT token
+    // generate token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -86,115 +86,115 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// get all employees in the logged in users division
-export const getDivisionEmployees = async (req, res) => {
-  try {
-    // Ensure request has authorization header
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
-    }
+// // get all employees in the logged in users division
+// export const getDivisionEmployees = async (req, res) => {
+//   try {
+//     // check for auth header
+//     const token = req.headers.authorization?.split(" ")[1];
+//     if (!token) {
+//       return res
+//         .status(401)
+//         .json({ message: "Unauthorized: No token provided" });
+//     }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.user.id; // Extract user ID from token
+//     // verify token
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const userId = decoded.user.id;
 
-    // Find the logged-in user and populate both OU and Division
-    const user = await Employee.findById(userId).populate({
-      path: "organizationalUnits",
-      populate: [
-        { path: "ouId", model: "OrganizationalUnit" },
-        { path: "divisionId", model: "Division" },
-      ],
-    });
+//     // find the user and populate ou adn division
+//     const user = await Employee.findById(userId).populate({
+//       path: "organizationalUnits",
+//       populate: [
+//         { path: "ouId", model: "OrganizationalUnit" },
+//         { path: "divisionId", model: "Division" },
+//       ],
+//     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    // Extract the user's assigned OUs and Divisions
-    const userDivisions = user.organizationalUnits
-      .map((unit) => unit.divisionId?.name)
-      .filter(Boolean); // Remove null values
+//     // extract user's ous and divisions
+//     const userDivisions = user.organizationalUnits
+//       .map((unit) => unit.divisionId?.name)
+//       .filter(Boolean); // Remove null values
 
-    const userOUs = user.organizationalUnits
-      .map((unit) => unit.ouId?.name)
-      .filter(Boolean);
+//     const userOUs = user.organizationalUnits
+//       .map((unit) => unit.ouId?.name)
+//       .filter(Boolean);
 
-    if (userDivisions.length === 0 || userOUs.length === 0) {
-      return res
-        .status(403)
-        .json({ message: "Access denied: No assigned OU or Division" });
-    }
+//     if (userDivisions.length === 0 || userOUs.length === 0) {
+//       return res
+//         .status(403)
+//         .json({ message: "Access denied: No assigned OU or Division" });
+//     }
 
-    // Fetch employees that match the user's OU and Division
-    const employees = await Employee.find({
-      "organizationalUnits.ouId": {
-        $in: user.organizationalUnits.map((unit) => unit.ouId),
-      },
-      "organizationalUnits.divisionId": {
-        $in: user.organizationalUnits.map((unit) => unit.divisionId),
-      },
-    }).populate({
-      path: "organizationalUnits",
-      populate: [
-        { path: "ouId", model: "OrganizationalUnit" },
-        { path: "divisionId", model: "Division" },
-      ],
-    });
+//     // fetch all employees that match users division
+//     const employees = await Employee.find({
+//       "organizationalUnits.ouId": {
+//         $in: user.organizationalUnits.map((unit) => unit.ouId),
+//       },
+//       "organizationalUnits.divisionId": {
+//         $in: user.organizationalUnits.map((unit) => unit.divisionId),
+//       },
+//     }).populate({
+//       path: "organizationalUnits",
+//       populate: [
+//         { path: "ouId", model: "OrganizationalUnit" },
+//         { path: "divisionId", model: "Division" },
+//       ],
+//     });
 
-    if (!employees.length) {
-      return res.status(403).json({
-        message: "Access denied: No employees found in your OU and Division",
-      });
-    }
+//     if (!employees.length) {
+//       return res.status(403).json({
+//         message: "Access denied: No employees found in your OU and Division",
+//       });
+//     }
 
-    const structuredData = {};
+//     const structuredData = {};
 
-    employees.forEach((employee) => {
-      employee.organizationalUnits.forEach((unit) => {
-        const ouName = unit.ouId?.name || "Unknown OU";
-        const divisionName = unit.divisionId?.name || "Unknown Division";
+//     employees.forEach((employee) => {
+//       employee.organizationalUnits.forEach((unit) => {
+//         const ouName = unit.ouId?.name || "Unknown OU";
+//         const divisionName = unit.divisionId?.name || "Unknown Division";
 
-        // Ensure this employee belongs to the user's division & OU
-        if (
-          !userDivisions.includes(divisionName) ||
-          !userOUs.includes(ouName)
-        ) {
-          return;
-        }
+//         // Ensure this employee belongs to the user's division & OU
+//         if (
+//           !userDivisions.includes(divisionName) ||
+//           !userOUs.includes(ouName)
+//         ) {
+//           return;
+//         }
 
-        // Ensure the OU exists in the structure
-        if (!structuredData[ouName]) {
-          structuredData[ouName] = {};
-        }
+//         // Ensure the OU exists in the structure
+//         if (!structuredData[ouName]) {
+//           structuredData[ouName] = {};
+//         }
 
-        // Ensure the Division exists within the OU
-        if (!structuredData[ouName][divisionName]) {
-          structuredData[ouName][divisionName] = [];
-        }
+//         // Ensure the Division exists within the OU
+//         if (!structuredData[ouName][divisionName]) {
+//           structuredData[ouName][divisionName] = [];
+//         }
 
-        // Add employee details under the correct division
-        structuredData[ouName][divisionName].push({
-          name: employee.name,
-          username: employee.username,
-        });
-      });
-    });
+//         // Add employee details under the correct division
+//         structuredData[ouName][divisionName].push({
+//           name: employee.name,
+//           username: employee.username,
+//         });
+//       });
+//     });
 
-    res.status(200).json({ data: structuredData });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+//     res.status(200).json({ data: structuredData });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 // Get a users OUs and divisions
 export const getEmployeeOUs = async (req, res) => {
   try {
-    // Ensure request has authorization header
+    // check for auth header
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return res
@@ -202,11 +202,11 @@ export const getEmployeeOUs = async (req, res) => {
         .json({ message: "Unauthorized: No token provided" });
     }
 
-    // Verify JWT token
+    // verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Extract `userId` from request params
-    const { userId } = req.params;
+    // extract userId from request params
+    const userId = decoded.user.id;
 
     if (!userId) {
       return res
@@ -214,7 +214,7 @@ export const getEmployeeOUs = async (req, res) => {
         .json({ message: "Bad request: No user ID provided" });
     }
 
-    // Fetch the requested user (not the logged-in user)
+    // fetch requested user from params (not the logged in user)
     const user = await Employee.findById(userId).populate({
       path: "organizationalUnits",
       populate: [
@@ -227,7 +227,7 @@ export const getEmployeeOUs = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Extract the user's assigned OUs and Divisions
+    // extract users assigned OUs and Divisions
     const userOUs = user.organizationalUnits
       .map((unit) => unit.ouId?.name)
       .filter(Boolean);
@@ -239,18 +239,210 @@ export const getEmployeeOUs = async (req, res) => {
       return res.status(403).json({ message: "No assigned OU or Division" });
     }
 
-    // Return the structured OU & Division data
+    // structure and return data
     res.status(200).json({
       user: {
         id: user._id,
         name: user.name,
         username: user.username,
+        role: user.role,
         organizationalUnits: user.organizationalUnits.map((unit) => ({
           ouName: unit.ouId?.name,
           divisionName: unit.divisionId?.name,
         })),
       },
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// get all employees 
+export const getAllEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.find().populate({
+      path: "organizationalUnits",
+      populate: [
+        { path: "ouId", model: "OrganizationalUnit" },
+        { path: "divisionId", model: "Division" },
+      ],
+    });
+
+    if (!employees.length) {
+      return res.status(404).json({ message: "No employees found" });
+    }
+
+    // Format data
+    const employeeList = employees.map((employee) => ({
+      name: employee.name,
+      username: employee.username,
+      role: employee.role,
+      id: employee._id,
+      organizationalUnits: employee.organizationalUnits.map((unit) => ({
+        ouName: unit.ouId?.name || "Unknown OU",
+        ouId: unit.ouId._id,
+        divisionId: unit.divisionId._id,
+        divisionName: unit.divisionId?.name || "Unknown Division",
+      })),
+    }));
+
+    res.status(200).json({ employees: employeeList });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// update an employee's role 
+export const updateEmployeeRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    const { id } = req.params;
+
+    if (!role) {
+      return res.status(400).json({ message: "Role is required" });
+    }
+
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    employee.role = role;
+    await employee.save();
+
+    res
+      .status(200)
+      .json({ message: "Employee role updated successfully", employee });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// export const updateEmployeeDivisions = async (req, res) => {
+//   try {
+//     const { organizationalUnits } = req.body; // List of OUs & Divisions
+//     const { id } = req.params;
+
+//     const employee = await Employee.findById(id);
+//     if (!employee) {
+//       return res.status(404).json({ message: "Employee not found" });
+//     }
+
+//     // Validate each Organizational Unit and Division
+//     const validatedOUs = [];
+//     for (const unit of organizationalUnits) {
+//       const ouExists = await OrganizationalUnit.findById(unit.ouId);
+//       const divisionExists = await Division.findById(unit.divisionId);
+
+//       if (!ouExists || !divisionExists) {
+//         return res.status(400).json({
+//           message: `Invalid OU (${unit.ouId}) or Division (${unit.divisionId})`,
+//         });
+//       }
+//       validatedOUs.push(unit);
+//     }
+
+//     // Assign the validated OUs & Divisions to the employee
+//     employee.organizationalUnits = validatedOUs;
+//     await employee.save();
+
+//     res
+//       .status(200)
+//       .json({ message: "Employee divisions updated successfully", employee });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// Delete an OU and Division from an employee
+// data passed in params due to delete route 
+export const deleteOUandDivisionFromEmployee = async (req, res) => {
+  try {
+    const { employeeId, ouId, divisionId } = req.params;
+
+    // fine employee by id
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // find index of ou and division to remove 
+    const updatedOrganizationalUnits = employee.organizationalUnits.filter(
+      (unit) =>
+        unit.ouId.toString() !== ouId ||
+        unit.divisionId.toString() !== divisionId
+    );
+
+    // check if ou and division exists in employee 
+    if (
+      updatedOrganizationalUnits.length === employee.organizationalUnits.length
+    ) {
+      return res
+        .status(404)
+        .json({ message: "OU and Division not found for this employee" });
+    }
+
+    // remove ou and division from employee ou array 
+    employee.organizationalUnits = updatedOrganizationalUnits;
+    await employee.save();
+
+    res.status(200).json({ message: "OU and Division removed successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// add a new ou and division to employee
+export const addOUAndDivision = async (req, res) => {
+  try {
+    const { employeeId, ouId, divisionId } = req.body;
+
+    // Validate input
+    if (!employeeId || !ouId || !divisionId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // find employee
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // validate if ou and division exists (in database)
+    const ouExists = await OrganizationalUnit.findById(ouId);
+    const divisionExists = await Division.findById(divisionId);
+
+    if (!ouExists || !divisionExists) {
+      return res
+        .status(400)
+        .json({ message: "Invalid Organizational Unit or Division" });
+    }
+
+    // check if already assigned
+    const isDuplicate = employee.organizationalUnits.some(
+      (existingUnit) =>
+        existingUnit.ouId.toString() === ouId &&
+        existingUnit.divisionId.toString() === divisionId
+    );
+
+    if (isDuplicate) {
+      return res.status(400).json({
+        message: `Employee is already assigned to this Organizational Unit and Division`,
+      });
+    }
+
+    // add new ou and division to employee 
+    employee.organizationalUnits.push({ ouId, divisionId });
+    await employee.save();
+
+    res
+      .status(200)
+      .json({ message: "OU and Division added successfully", employee });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

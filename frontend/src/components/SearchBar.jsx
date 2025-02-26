@@ -1,3 +1,5 @@
+// Search bar component 
+
 import "./SearchBar.css";
 import { useState } from "react";
 
@@ -14,7 +16,7 @@ const SearchBar = ({ onSearch }) => {
       <input
         className="search-input"
         type="text"
-        placeholder="Search by Service..."
+        placeholder="Search..."
         onChange={handleSearch}
         value={query}
       ></input>

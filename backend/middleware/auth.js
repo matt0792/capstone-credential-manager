@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
-// verify token and check if role is allowed
+// middleware to verify token and check if role is allowed for a specific route
+// called from authwrapper in the frontend
 export const verifyTokenWithRole =
   (roles = []) =>
   (req, res, next) => {
@@ -34,3 +35,26 @@ export const verifyTokenWithRole =
       return res.status(403).json({ message: "Invalid or expired token" });
     }
   };
+
+// check if the user is an admin (for conditional rendering)
+export const checkAdminPrivileges = (req, res) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) {
+    return res.status(401).json({ message: "No auth token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+
+    if (req.user.role === "admin") {
+      return res.status(200).json({ message: "admin" });
+    } else {
+      return res.status(403).json({ message: "Access denied" });
+    }
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
+};

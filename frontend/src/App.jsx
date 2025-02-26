@@ -8,11 +8,14 @@ import Background from "./components/Background";
 import SideBar from "./components/SideBar";
 import AuthWrapper from "./components/AuthWrapper";
 import AddCredModal from "./components/AddCredModal";
+import UpdateCredModal from "./components/UpdateCredModal";
 
 // Pages
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import UserPage from "./pages/UserPage";
+import EmployeeList from "./pages/EmployeeList";
 
 const App = () => {
   const [sectionToDisplay, setSectionToDisplay] = useState(null);
@@ -20,10 +23,16 @@ const App = () => {
   const [onHome, setOnHome] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDivisionId, setSelectedDivisionId] = useState(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [credDetails, setCredDetails] = useState(null);
 
   useEffect(() => {
     setOnHome(false);
   }, []);
+
+  const refreshPage = () => {
+    window.location.reload();
+  };
 
   return (
     <Router>
@@ -38,6 +47,17 @@ const App = () => {
           <AddCredModal
             selectedDivisionId={selectedDivisionId}
             setShowAddModal={setShowAddModal}
+            showAddModal={showAddModal}
+            refreshPage={refreshPage}
+          />
+        )}
+        {showUpdateModal && (
+          <UpdateCredModal
+            selectedDivisionId={selectedDivisionId}
+            setShowUpdateModal={setShowUpdateModal}
+            credDetails={credDetails}
+            showUpdateModal={showUpdateModal}
+            refreshPage={refreshPage}
           />
         )}
         <div className="page-content">
@@ -59,6 +79,8 @@ const App = () => {
                     setOnHome={setOnHome}
                     setShowAddModal={setShowAddModal}
                     setSelectedDivisionId={setSelectedDivisionId}
+                    setShowUpdateModal={setShowUpdateModal}
+                    setCredDetails={setCredDetails}
                   />
                 </AuthWrapper>
               }
@@ -71,6 +93,28 @@ const App = () => {
                   setIsAuthenticated={setIsAuthenticated}
                 >
                   <RegisterPage sectionToDisplay={sectionToDisplay} />
+                </AuthWrapper>
+              }
+            />
+            <Route
+              path="/user"
+              element={
+                <AuthWrapper
+                  isAuthenticated={isAuthenticated}
+                  setIsAuthenticated={setIsAuthenticated}
+                >
+                  <UserPage />
+                </AuthWrapper>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AuthWrapper
+                  isAuthenticated={isAuthenticated}
+                  setIsAuthenticated={setIsAuthenticated}
+                >
+                  <EmployeeList refreshPage={refreshPage} />
                 </AuthWrapper>
               }
             />

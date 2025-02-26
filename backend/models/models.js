@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// Employee schema definition
+// employee schema  
 const EmployeeSchema = new mongoose.Schema(
   {
     name: {
@@ -13,7 +13,7 @@ const EmployeeSchema = new mongoose.Schema(
       unique: true,
     },
     password: {
-      type: String, // Must be hashed before storing
+      type: String, // this is hashed 
       required: true,
     },
     role: {
@@ -37,7 +37,7 @@ const EmployeeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Organizational Unit Schema
+// Organizational Unit schema 
 const OrganizationalUnitSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   divisions: [
@@ -59,7 +59,7 @@ const DivisionSchema = new mongoose.Schema({
     {
       siteName: { type: String, required: true },
       username: { type: String, required: true },
-      password: { type: String, required: true }, // Must be hashed before storing
+      password: { type: String, required: true }, // not hashed 
     },
   ],
 });

@@ -1,3 +1,5 @@
+// register page 
+
 import "./RegisterPage.css";
 import { useState, useEffect } from "react";
 
@@ -14,6 +16,7 @@ const RegisterPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  // get list of ous and divisions to populate select menus
   useEffect(() => {
     const getOUsAndDivisions = async () => {
       const token = localStorage.getItem("token");
@@ -31,7 +34,7 @@ const RegisterPage = () => {
         }
 
         const data = await response.json();
-        setOUs(data.organizationalUnits); // Ensure to access the `organizationalUnits` array
+        setOUs(data.organizationalUnits);
       } catch (error) {
         setError(error.message);
       }
@@ -49,9 +52,10 @@ const RegisterPage = () => {
     const updatedOUs = [...formData.organizationalUnits];
     updatedOUs[index][name] = value;
 
-    // Reset the divisionId when OU changes to ensure consistency
+    // Reset the divisionId when OU changes
+    // even though all ous have the same divisions, divisionId for each is different
     if (name === "ouId") {
-      updatedOUs[index].divisionId = ""; // Reset divisionId
+      updatedOUs[index].divisionId = ""; 
     }
 
     setFormData({ ...formData, organizationalUnits: updatedOUs });
@@ -80,12 +84,15 @@ const RegisterPage = () => {
     setSuccess(null);
 
     try {
+      const token = localStorage.getItem("token");
+
       const response = await fetch(
         "http://localhost:3000/api/employee/register",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
         }

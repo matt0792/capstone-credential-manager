@@ -1,3 +1,5 @@
+// Main page that shows credentials for division 
+
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
@@ -8,9 +10,13 @@ const HomePage = ({
   sectionToDisplay,
   setOnHome,
   setShowAddModal,
+  setShowUpdateModal,
   setSelectedDivisionId,
+  setCredDetails,
+  showAddModal,
+  showUpdateModal,
 }) => {
-  const { data, loading, error } = useOrganizationalData();
+  const { data, loading, error, refresh } = useOrganizationalData();
   const sectionRefs = useRef({});
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -18,6 +24,14 @@ const HomePage = ({
   const toggleAddModal = (divisionId) => {
     setSelectedDivisionId(divisionId);
     setShowAddModal((prev) => !prev);
+    if (!showAddModal) refresh();
+  };
+
+  const toggleUpdateModal = (divisionId, cred) => {
+    setCredDetails(cred);
+    setSelectedDivisionId(divisionId);
+    setShowUpdateModal((prev) => !prev);
+    if (!showUpdateModal) refresh();
   };
 
   // Initialize refs for scrolling
@@ -113,6 +127,14 @@ const HomePage = ({
                             data-password={cred.password}
                           ></div>
                         </div>
+                      </div>
+                      <div
+                        className="cred-edit-button"
+                        onClick={() =>
+                          toggleUpdateModal(division.divisionId, cred)
+                        }
+                      >
+                        Edit <i class="bi bi-pencil-square"></i>
                       </div>
                     </div>
                   ))

@@ -1,3 +1,5 @@
+// Main entry point for backend 
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -11,10 +13,12 @@ dotenv.config();
 
 connectDB();
 
+// Middleware 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes 
 app.use("/api/employee", employeeRoutes);
 app.use("/api/division", divisionRoutes);
 app.use("/api/ou", ouRoutes);

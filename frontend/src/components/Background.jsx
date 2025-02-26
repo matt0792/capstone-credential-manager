@@ -1,3 +1,5 @@
+// component to sit behind all elements as a bg 
+
 import React from "react";
 import "./Background.css";
 

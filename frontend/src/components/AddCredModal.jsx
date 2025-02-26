@@ -1,10 +1,12 @@
+// Modal to add a new credential to division 
+
 import "./AddCredModal.css";
 import axios from "axios";
 import { useState } from "react";
 
 const API_URL = "http://localhost:3000/api/division/credentials";
 
-const AddCredModal = ({ setShowAddModal, selectedDivisionId }) => {
+const AddCredModal = ({ setShowAddModal, selectedDivisionId, refreshPage }) => {
   const [siteName, setSiteName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +23,8 @@ const AddCredModal = ({ setShowAddModal, selectedDivisionId }) => {
   };
 
   const addDivisionCredential = async (selectedDivisionId) => {
+    const token = localStorage.getItem("token");
+
     if (!siteName || !username || !password) {
       setError("All fields are required.");
       return;
@@ -30,12 +34,21 @@ const AddCredModal = ({ setShowAddModal, selectedDivisionId }) => {
     setError(null);
 
     try {
-      const response = await axios.post(API_URL, {
-        divisionId: selectedDivisionId,
-        siteName,
-        username,
-        password,
-      });
+      const response = await axios.post(
+        API_URL,
+        {
+          divisionId: selectedDivisionId,
+          siteName,
+          username,
+          password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       console.log("Credential added:", response.data);
       hideModal();
@@ -44,6 +57,7 @@ const AddCredModal = ({ setShowAddModal, selectedDivisionId }) => {
       console.error(err);
     } finally {
       setLoading(false);
+      refreshPage()
     }
   };
 
